@@ -1,6 +1,6 @@
 const PromoCode = require("../../Models/Course/promocode");
-const Course = require("../../Models/Course/createCourse");
 const Student = require("../../Models/Student/registerStudentModel");
+const Product = require("../../Models//Product/productModel");
 
 const validatePromoFields = (data) => {
   const errors = [];
@@ -42,6 +42,7 @@ const validatePromoFields = (data) => {
 exports.createPromoCode = async (req, res) => {
   try {
     const data = req.body;
+    console.log("Creating promo code with data:", data);
 
     const errors = validatePromoFields(data);
     if (errors.length > 0) {
@@ -57,7 +58,7 @@ exports.createPromoCode = async (req, res) => {
       code: data.code,
       discountType: data.discountType,
       discountValue: data.discountValue,
-      applicableCourses: data.applicableCourses,
+      applicableProducts: data.applicableCourses,
       usageLimit: data.usageLimit,
       usedCount: 0,
       expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
@@ -65,6 +66,7 @@ exports.createPromoCode = async (req, res) => {
     });
 
     const savedPromoCode = await promoCode.save();
+    console.log("Created promo code:", savedPromoCode);
     return res
       .status(201)
       .json({ message: "Promo code created successfully.", promoCode });
@@ -78,6 +80,7 @@ exports.updatePromoCode = async (req, res) => {
   try {
     const promoId = req.params.id;
     const data = req.body;
+    console.log("Updating promo code with data:", data);
 
     const errors = validatePromoFields(data);
     if (errors.length > 0) {
@@ -89,7 +92,7 @@ exports.updatePromoCode = async (req, res) => {
         code: data.code,
         discountType: data.discountType,
         discountValue: data.discountValue,
-        applicableCourses: data.applicableCourses,
+       applicableProducts: data.applicableCourses,
         usageLimit: data.usageLimit,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
         isActive: data.isActive,
@@ -115,7 +118,7 @@ exports.updatePromoCode = async (req, res) => {
 exports.getAllPromoCodes = async (req, res) => {
   try {
     const promoCodes = await PromoCode.find({}).populate({
-      path: "applicableCourses",
+      path: "applicableProducts",
       select: "_id title",
     });
     if (!promoCodes || promoCodes.length === 0) {
@@ -136,44 +139,8 @@ exports.getAllPromoCodes = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-exports.updatePromoCode = async (req, res) => {
-  try {
-    const promoId = req.params.id;
-    const data = req.body;
 
-    const errors = validatePromoFields(data);
-    if (errors.length > 0) {
-      return res.status(400).json({ errors });
-    }
 
-    const updatedPromo = await PromoCode.findByIdAndUpdate(
-      promoId,
-      {
-        code: data.code,
-        discountType: data.discountType,
-        discountValue: data.discountValue,
-        applicableCourses: data.applicableCourses,
-        usageLimit: data.usageLimit,
-        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-        isActive: data.isActive,
-        updatedAt: new Date(),
-      },
-      { new: true }
-    );
-
-    if (!updatedPromo) {
-      return res.status(404).json({ message: "Promo code not found." });
-    }
-    console.log("Promo code updated:", updatedPromo);
-    return res.status(200).json({
-      message: "Promo code updated successfully.",
-      promoCode: updatedPromo,
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
 exports.deletePromoCode = async (req, res) => {
   try {
     const promoId = req.params.id;
@@ -195,16 +162,19 @@ exports.deletePromoCode = async (req, res) => {
 exports.validatePromoCode = async (req, res) => {
   try {
     console.log("Validating promo code...");
-    const { code, courseId, studentId } = req.body;
-  
+    const { code, productId, studentId,quantity} = req.body; 
+    console.log(code,productId,studentId,quantity)
+if (!quantity || quantity <= 0) {
+  quantity = 1;
+}
 
-    if (!code || !courseId || !studentId) {
+    if (!code || !productId || !studentId ) {
       return res.status(400).json({
         success: false,
-        message: "Code, courseId, and studentId are required.",
+        message: "Code, productId, and studentId are required.", 
       });
     }
-  
+    console.log("hii")
 
     const student = await Student.findById(studentId);
     if (!student) {
@@ -213,7 +183,8 @@ exports.validatePromoCode = async (req, res) => {
         message: "Invalid student.",
       });
     }
- 
+    console.log("hii the student is :",student)
+
     const promo = await PromoCode.findOne({ code });
     if (!promo || !promo.isActive) {
       return res.status(404).json({
@@ -221,50 +192,55 @@ exports.validatePromoCode = async (req, res) => {
         message: "Promo code is invalid or inactive.",
       });
     }
-
-
+console.log("hii promo code is :", promo)
     if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) {
       return res.status(400).json({
         success: false,
         message: "Promo code has expired.",
       });
     }
-  
-
+console.log("hii2")
     if (promo.usageLimit > 0 && promo.usedCount >= promo.usageLimit) {
       return res.status(400).json({
         success: false,
         message: "Promo code usage limit reached.",
       });
     }
+console.log("hii3")
     if (promo.usedBy?.some((id) => id.toString() === studentId)) {
       return res.status(400).json({
         success: false,
         message: "You have already used this promo code.",
       });
     }
-
-    const isApplicable = promo.applicableCourses.some(
-      (id) => id.toString() === courseId
+console.log("hii4")
+    const isApplicable = promo.applicableProducts.some(
+      (id) => id.toString() === productId
     );
+    console.log("is applicable:",isApplicable )
 
     if (!isApplicable) {
       return res.status(400).json({
         success: false,
-        message: "Promo code not applicable for this course.",
+        message: "Promo code not applicable for this product.", 
       });
     }
 
-    const course = await Course.findById(courseId);
-    if (!course) {
+    const product = await Product.findById(productId); 
+    if (!product) {
       return res.status(404).json({
         success: false,
-        message: "Course not found.",
+        message: "Product not found.",
       });
     }
+
     const discountPercent = promo.discountValue;
-    const discountAmount = Math.round((course.price * discountPercent) / 100);
-    const finalPrice = course.price - discountAmount;
+    const productTotalPrice = product.price*quantity
+    const discountAmount = Math.round((productTotalPrice* discountPercent) / 100);
+    const finalPrice = productTotalPrice- discountAmount;
+    console.log("discountPercent",discountPercent)
+    console.log("discount amount :", discountAmount)
+    console.log("final price :", finalPrice)
 
     return res.status(200).json({
       success: true,

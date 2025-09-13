@@ -93,9 +93,9 @@ function verifyTempToken(token) {
 
 exports.registerStudent = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password ,phone} = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -113,15 +113,20 @@ exports.registerStudent = async (req, res) => {
       password,
       otp,
       otpExpires,
+      phone
     };
 
     const tempToken = createTempToken(payload);
 
-    const subject = "🔐 Verify Your Email - BTP Nexus Academy";
-    const message = `
+    const subject = "🔐 Verify Your Email - NeetPeak";
+
+const message = `
 Hi ${name},
 
-Thank you for registering with BTP Nexus Academy!
+Welcome to NeetPeak! 🎉
+
+Thank you for joining NeetPeak, the dedicated learning platform for NEET aspirants.  
+We’re excited to help you on your journey toward cracking NEET with the right tools, guidance, and resources.  
 
 Please use the following One-Time Password (OTP) to complete your signup:
 
@@ -132,22 +137,25 @@ This OTP is valid for the next 5 minutes.
 If you didn’t request this, please ignore this email.
 
 Best regards,  
-Team BTP Nexus Academy  
-📧 support@btpnexusacademy.com
+Team NeetPeak  
+📧 support@neetpeak.com
 `;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color: #333;">
-        <h2>Hello ${name}, 👋</h2>
-        <p>Thank you for registering with <strong>BTP Nexus Academy</strong>!</p>
-        <p>To verify your email and complete your account setup, use this OTP:</p>
-        <h1 style="background: #f0f0f0; padding: 12px 20px; display: inline-block; border-radius: 8px;">${otp}</h1>
-        <p>This OTP is valid for <strong>5 minutes</strong>.</p>
-        <p>If you didn't initiate this, please ignore this message.</p>
-        <hr />
-        <p style="font-size: 0.9rem;">Need help? Contact us at <a href="mailto:support@btpnexusacademy.com">support@btpnexusacademy.com</a></p>
-      </div>
-    `;
+const html = `
+  <div style="font-family: Arial, sans-serif; color: #333;">
+    <h2>Hello ${name}, 👋</h2>
+    <p>Welcome to <strong>NeetPeak</strong> — a platform designed specially for <strong>NEET aspirants</strong> like you!</p>
+    <p>To verify your email and get started, please use the OTP below:</p>
+    <h1 style="background: #f0f0f0; padding: 12px 20px; display: inline-block; border-radius: 8px;">${otp}</h1>
+    <p>This OTP is valid for <strong>5 minutes</strong>.</p>
+    <p>If you didn’t initiate this request, kindly ignore this email.</p>
+    <hr />
+    <p style="font-size: 0.9rem;">
+      Need help? Contact us at 
+      <a href="mailto:support@neetpeak.com">support@neetpeak.com</a>
+    </p>
+  </div>
+`;
 
     try {
       await sendEmail(email, subject, message.trim(), html);
@@ -159,6 +167,7 @@ Team BTP Nexus Academy
       success: true,
       message: "OTP sent successfully.",
       tempToken,
+
     });
   } catch (err) {
     console.error("registerStudent error:", err);
@@ -187,6 +196,7 @@ exports.verifyStudentOTP = async (req, res) => {
     const student = new RegisterStudent({
       name: decoded.name,
       email: decoded.email,
+       mobile:decoded.phone,
       password: decoded.password,
       otp: decoded.otp,
       otpExpires: decoded.otpExpires,
@@ -199,35 +209,36 @@ exports.verifyStudentOTP = async (req, res) => {
       process.env.JWT_TEMP_SECRET_KEY,
       { expiresIn: "1h" }
     );
-    const subject = "🎉 Welcome to BTP Nexus Academy!";
-    const plainText = `
+const subject = "🎉 Welcome to NeetPeak!";
+const plainText = `
 Hi ${decoded.name},
 
 Congratulations! 🎓
 
-You have successfully registered with BTP Nexus Academy.
+You have successfully registered with NeetPeak.
 
-We're excited to have you onboard. Get ready to explore courses, track your progress, and enhance your skills with us.
+We're excited to have you onboard. Get ready to focus on your NEET preparation, track your progress, and boost your learning with us.
 
-You can now log in and start learning today!
+You can now log in and start your NEET journey today!
 
-If you have any questions or need support, feel free to reach out to us at support@btpnexusacademy.com
+If you have any questions or need support, feel free to reach out to us at support@neetpeak.com
 
 Best regards,
-Team BTP Nexus Academy
-    `;
+Team NeetPeak
+`;
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto;">
-        <h2 style="color: #2d89ef;">🎉 Welcome to <span style="color: #ff5733;">BTP Nexus Academy</span>, ${decoded.name}!</h2>
-        <p>We're thrilled to have you join our community of learners. 🚀</p>
-        <p>You have <strong>successfully registered</strong> and can now explore premium courses, track progress, and unlock your potential.</p>
-        <a href="https://btpnexusacademy.com/login" style="display:inline-block; padding: 12px 20px; background-color: #2d89ef; color: #fff; border-radius: 5px; text-decoration: none; margin: 20px 0;">Start Learning</a>
-        <p>If you ever need help, feel free to contact us at <a href="mailto:support@btpnexusacademy.com">support@btpnexusacademy.com</a></p>
-        <hr style="margin: 30px 0;">
-        <p style="font-size: 0.9rem; color: #777;">This email was sent by BTP Nexus Academy | Empowering Learners Everywhere</p>
-      </div>
-    `;
+const html = `
+  <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto;">
+    <h2 style="color: #2d89ef;">🎉 Welcome to <span style="color: #ff5733;">NeetPeak</span>, ${decoded.name}!</h2>
+    <p>We're thrilled to have you join our community of future doctors. 🚀</p>
+    <p>You have <strong>successfully registered</strong> and can now focus on NEET preparation, practice questions, and track your progress with us.</p>
+    <a href="https://neetpeak.com/login" style="display:inline-block; padding: 12px 20px; background-color: #2d89ef; color: #fff; border-radius: 5px; text-decoration: none; margin: 20px 0;">Start Learning</a>
+    <p>If you ever need help, feel free to contact us at <a href="mailto:support@neetpeak.com">support@neetpeak.com</a></p>
+    <hr style="margin: 30px 0;">
+    <p style="font-size: 0.9rem; color: #777;">This email was sent by NeetPeak | Focused Learning for NEET Aspirants</p>
+  </div>
+`;
+
 
     try {
       await sendEmail(decoded.email, subject, plainText.trim(), html);
@@ -242,6 +253,7 @@ Team BTP Nexus Academy
       success: true,
       message: "Registration successful.",
       token,
+   
     });
   } catch (err) {
     console.error("verifyStudentOTP error:", err);
@@ -253,9 +265,9 @@ Team BTP Nexus Academy
 
 exports.resendOTP = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password ,phone} = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -273,24 +285,65 @@ exports.resendOTP = async (req, res) => {
       password,
       otp,
       otpExpires,
+      phone
     };
 
     const tempToken = jwt.sign(payload, process.env.JWT_TEMP_SECRET_KEY, {
       expiresIn: "5m",
     });
 
-    await sendSMS({
-      to: email,
-      messageType: "registration",
-      otp,
-      name: name || "Dear Student",
-    });
+   
+    const subject = "🔐 Verify Your Email - NeetPeak";
+
+const message = `
+Hi ${name},
+
+Welcome to NeetPeak! 🎉
+
+Thank you for joining NeetPeak, the dedicated learning platform for NEET aspirants.  
+We’re excited to help you on your journey toward cracking NEET with the right tools, guidance, and resources.  
+
+Please use the following One-Time Password (OTP) to complete your signup:
+
+🔑 OTP: ${otp}
+
+This OTP is valid for the next 5 minutes.
+
+If you didn’t request this, please ignore this email.
+
+Best regards,  
+Team NeetPeak  
+📧 support@neetpeak.com
+`;
+
+const html = `
+  <div style="font-family: Arial, sans-serif; color: #333;">
+    <h2>Hello ${name}, 👋</h2>
+    <p>Welcome to <strong>NeetPeak</strong> — a platform designed specially for <strong>NEET aspirants</strong> like you!</p>
+    <p>To verify your email and get started, please use the OTP below:</p>
+    <h1 style="background: #f0f0f0; padding: 12px 20px; display: inline-block; border-radius: 8px;">${otp}</h1>
+    <p>This OTP is valid for <strong>5 minutes</strong>.</p>
+    <p>If you didn’t initiate this request, kindly ignore this email.</p>
+    <hr />
+    <p style="font-size: 0.9rem;">
+      Need help? Contact us at 
+      <a href="mailto:support@neetpeak.com">support@neetpeak.com</a>
+    </p>
+  </div>
+`;
+
+    try {
+      await sendEmail(email, subject, message.trim(), html);
+    } catch (err) {
+      console.error("Error sending email:", err.message || err);
+    }
+
 
     return res.status(200).json({
       success: true,
       message: "OTP resent successfully",
       tempToken,
-      otp,
+      
     });
   } catch (err) {
     console.error("resendOTP error:", err.message);
@@ -462,36 +515,50 @@ exports.studentForgotPassword = async (req, res) => {
 
     const token = createTempToken(payload);
 
-    const subject = "🔐 Verify Your Updated Email - BTP Nexus Academy";
-    const message = `
+   const subject = "🔑 Reset Your Password - NEETPeak";
+
+const message = `
 Hi ${student.name},
 
-Your profile at BTP Nexus Academy has been updated.
+We received a request to reset your password for your NEETPeak account.
 
-Please use the following One-Time Password (OTP) to verify your updated email:
+Please use the following One-Time Password (OTP) to reset your password:
 
-🔑 OTP: ${otp}
+🔐 OTP: ${otp}
 
 This OTP is valid for the next 5 minutes.
 
-If you didn’t request this, please ignore this email.
+If you did not request a password reset, please ignore this email.
 
 Best regards,  
-Team BTP Nexus Academy  
-📧 support@btpnexusacademy.com
+Team NEETPeak  
+📧 support@neetpeak.com
 `;
 
-    const html = `
-  <div style="font-family: Arial, sans-serif; color: #333;">
+const html = `
+  <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
     <h2>Hello ${student.name}, 👋</h2>
-    <p>Your profile at <strong>BTP Nexus Academy</strong> has been updated.</p>
-    <p>Please verify your updated email by entering this OTP:</p>
-    <h1 style="background: #f0f0f0; padding: 12px 20px; display: inline-block; border-radius: 8px;">${otp}</h1>
-    <p>This OTP is valid for <strong>5 minutes</strong>.</p>
-    <hr />
-    <p style="font-size: 0.9rem;">Need help? Contact <a href="mailto:support@btpnexusacademy.com">support@btpnexusacademy.com</a></p>
+    <p>We received a request to <strong>reset your password</strong> for your <strong>NEETPeak</strong> account.</p>
+    
+    <p>Use the following One-Time Password (OTP) to proceed with resetting your password:</p>
+    
+    <h1 style="background: #f0f0f0; padding: 12px 24px; display: inline-block; border-radius: 8px; letter-spacing: 2px;">
+      ${otp}
+    </h1>
+    
+    <p style="margin-top: 15px;">This OTP is valid for <strong>5 minutes</strong>.</p>
+    
+    <hr style="margin: 20px 0;" />
+    
+    <p style="font-size: 0.9rem; color: #555;">
+      If you did not request this, please ignore this email.  
+      <br />
+      Need help? Contact us at 
+      <a href="mailto:support@neetpeak.com" style="color: #3B5A94; text-decoration: none;">support@neetpeak.com</a>
+    </p>
   </div>
 `;
+
 
     try {
       await sendEmail(student.email, subject, message.trim(), html);
@@ -544,6 +611,7 @@ exports.verifyForgotPasswordtOTP = async (req, res) => {
 exports.updateForgotPassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
+   
 
     if (!email || !newPassword) {
       return res
@@ -551,7 +619,8 @@ exports.updateForgotPassword = async (req, res) => {
         .json({ success: false, message: "All fields are required" });
     }
 
-    const student = await RegisterStudent.findOne({ email });
+    // explicitly include password
+    const student = await RegisterStudent.findOne({ email }).select("+password");
 
     if (!student) {
       return res
@@ -559,19 +628,20 @@ exports.updateForgotPassword = async (req, res) => {
         .json({ success: false, message: "Student not found" });
     }
 
-    student.password = newPassword;
+    student.password = newPassword; 
     await student.save();
 
     return res
       .status(200)
       .json({ success: true, message: "Password updated successfully" });
   } catch (error) {
-    console.error("Error updating password:", error);
+    console.error("Error updating password:", error.message);
     return res
       .status(500)
       .json({ success: false, message: "Internal server error" });
   }
 };
+
 
 exports.logoutStudent = async (req, res) => {
   try {

@@ -5,7 +5,8 @@ const ManagePaymentController = require("../../Controllers/PaymentController/man
 const { verifyToken, requireRole } = require("../../Middleware/authMiddleware");
 router.post('/createOrder',ManagePaymentController.createOrder)
 router.post('/verifyPayment',ManagePaymentController.verifyPayment)
-router.get('/getpurchaseCoursedata', ManagePaymentController.getAllPurchasedCoursesDetails)
-router.get('/cleanpurchaseddata',ManagePaymentController.cleanupOrphanPurchasedCourses)
+router.get('/purchasedMentorshipPlans',ManagePaymentController.getAllPurchasedMentorships)
+// router.get('/getpurchaseCoursedata', ManagePaymentController.getAllPurchasedCoursesDetails)
+// router.get('/cleanpurchaseddata',ManagePaymentController.cleanupOrphanPurchasedCourses)
 
 module.exports = router

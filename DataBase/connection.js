@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 require('dotenv').config
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_DB_REMOTE_URL, {
+    await mongoose.connect(process.env.MONGO_DB_LOCAL_URL, {
       serverSelectionTimeoutMS: 30000  });
 
   } catch (error) {

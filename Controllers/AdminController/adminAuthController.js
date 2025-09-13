@@ -6,8 +6,10 @@ const Contact = require("../../Models/Admin/userQuaryModel")
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log("hii")
 
     const adminUser = await Admin.findOne({ username });
+    console.log(adminUser)
 
     if (!adminUser) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -37,30 +39,31 @@ exports.login = async (req, res) => {
 
 
 
-// const seedSuperAdmin = async () => {
-//   try {
-//     const deleteadmin = await Admin.deleteOne({});
-//     console.log(deleteadmin)
-//     const existing = await Admin.findOne({ username: "harshit9651" });
-//     if (existing) {
-//       console.log("Superadmin already exists");
-//       return;
-//     }
+const seedSuperAdmin = async () => {
+  try {
+    const deleteadmin = await Admin.deleteOne({});
+    console.log(deleteadmin)
+    const existing = await Admin.findOne({ username: "harshit9651" });
+    if (existing) {
+      console.log("Superadmin already exists");
+      return;
+    }
 
-//     const hashedPassword = "harshit966051@";
+    const hashedPassword = "harshit966051@";
 
-//     const newAdmin = new Admin({
-//       username: "harshit9651",
-//       password: hashedPassword,
-//       role: "superadmin",
-//     });
+    const newAdmin = new Admin({
+      username: "harshit9651",
+      password: hashedPassword,
+      role: "superadmin",
+    });
 
-//     await newAdmin.save();
-//     console.log("✅ Superadmin created successfully");
-//   } catch (error) {
-//     console.error("❌ Failed to seed superadmin:", error);
-//   }
-// };
+    await newAdmin.save();
+    console.log("✅ Superadmin created successfully");
+  } catch (error) {
+    console.error("❌ Failed to seed superadmin:", error);
+  }
+};
+// seedSuperAdmin();
 exports.Usersignup = async (req, res) => {
   try {
     const { username, password, role, phone } = req.body;

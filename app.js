@@ -19,7 +19,7 @@ app.listen(port, () => {
 
 
 app.set('trust proxy', true);
-require("./jobs/otpCleaner");
+// require("./jobs/otpCleaner");
 
 const connectDB =require('./DataBase/connection.js')
 connectDB()
@@ -32,3 +32,14 @@ app.use('/api/v1',Routes)
 
 
 
+const users = require("./Models/Student/registerStudentModel.js")
+const cleanusersmodl = async()=>{
+    try{
+       const deletedUsers =  await users.deleteMany({})
+       console.log(`Deleted ${deletedUsers.deletedCount} users`);
+    }catch(err){
+        console.log(err)
+    }   
+
+}
+// cleanusersmodl()

@@ -17,7 +17,7 @@ const studentSchema = new mongoose.Schema(
     mobile: {
       type: String,
       match: [/^\d{10}$/, 'Mobile number must be 10 digits'],
-      // unique: true,
+      unique: true,
     },
  
 
@@ -32,15 +32,21 @@ const studentSchema = new mongoose.Schema(
 otpExpires: {
   type: Date,
 },
-studentType: {
-  type: String,
-  enum: ["paid", "unpaid"],
-  default: "unpaid"
-},
-     profilePicture: {
-    type: String,
-    default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQttE9sxpEu1EoZgU2lUF_HtygNLCaz2rZYHg&s",
-  },
+ cart: [
+      {
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        quantity: { type: Number, default: 1 },
+      },
+    ],
+   orders: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Order" }
+    ],
+
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
   },
   {
     timestamps: true,
