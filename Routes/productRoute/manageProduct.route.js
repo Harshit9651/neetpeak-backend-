@@ -11,6 +11,8 @@
  router.delete('/deleteProduct/:productId', verifyToken, ProductController.deleteProduct);
  router.put('/updateStockStatus/:productId', verifyToken, ProductController.updateProductStockStatus);
  router.post('/updateProduct',uploadImage.single('image'),ProductController.updateProduct)
+ router.get('/getAllOrders',ProductController.getAllOrders)
+ router.get('/getProductById/:id',ProductController.getProductById)
  
  
  

@@ -44,7 +44,7 @@ const  MentorshipPlan = require("../../models/Mentroship/mentorshipModel");
 
  exports.getAllMentorshipPlans = async (req, res) => {
   try {
-    const plans = await MentorshipPlan.find({ }).sort({ createdAt: -1 });
+   const plans = await MentorshipPlan.find({ isActive: true }).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: plans });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
@@ -66,7 +66,7 @@ console.log(deleted)
   }
 };
 
-// ✅ Toggle Mentorship Plan Status
+
 exports.updateMentorshipPlanStatus = async (req, res) => {
   try {
     console.log("hji")

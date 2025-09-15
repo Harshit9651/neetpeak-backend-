@@ -124,7 +124,6 @@ exports.updateCart = async (req, res) => {
         .json({ success: false, message: "Quantity must be at least 1" });
     }
 
-    // ✅ Find the user's cart
     let cart = await Cart.findOne({ user: userId });
     if (!cart) {
       return res
@@ -132,7 +131,6 @@ exports.updateCart = async (req, res) => {
         .json({ success: false, message: "Cart not found" });
     }
 
-    // ✅ Find product inside cart
     const itemIndex = cart.items.findIndex(
       (item) => item.product.toString() === productId
     );
@@ -142,14 +140,12 @@ exports.updateCart = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Product not found in cart" });
     }
-
-    // ✅ Update quantity
+y
     cart.items[itemIndex].quantity = quantity;
 
-    // ✅ Save cart
     await cart.save();
 
-    // ✅ Populate product details (for frontend display: price, name, etc.)
+   
     cart = await Cart.findOne({ user: userId }).populate("items.product");
 
     return res.status(200).json({

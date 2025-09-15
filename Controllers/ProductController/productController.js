@@ -1,4 +1,5 @@
 const Product = require("../../models/Product/productModel");
+const Order = require("../../models/Product/orderModel")
 const { uploadToCloudinary } = require("../../Services/cloudinary.service");
 const { deleteFromCloudinary } = require("../../Services/cloudinary");
 const mongoose = require("mongoose");
@@ -126,6 +127,43 @@ exports.listProductsForPrmocode = async (req, res) => {
     });
   }
 };
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log("Fetching product by ID:", id);
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID is required",
+      });
+    }
+
+    const product = await Product.findById(id);
+    console.log("product fetch by id is :",product)
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
+
+  } catch (error) {
+    console.error("Error fetching product by ID:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server Error: Unable to fetch product",
+    });
+  }
+};
+
 exports.deleteProduct = async (req, res) => {
     console.log("Delete product request received");
   const productId = req.params.productId;
@@ -303,6 +341,66 @@ console.log("Updated product:", updatedProduct);
       success: false,
       message: "Internal Server Error",
       error: error.message,
+    });
+  }
+};
+
+exports.getAllOrders = async (req, res) => {
+  try {
+    console.log("📦 Fetching all product orders...");
+
+    const orders = await Order.find()
+      .populate("userId", "name email mobile") 
+      .populate("productId", "title description price mrp images productType") 
+      .lean();
+
+    const formattedOrders = orders.map((order) => ({
+      orderId: order._id,
+      status: order.status,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+
+  
+      student: {
+        id: order.userId?._id,
+        name: order.userId?.name || "N/A",
+        email: order.userId?.email || "N/A",
+        mobile: order.userId?.mobile || "N/A",
+      },
+
+ 
+      product: {
+        id: order.productId?._id,
+        title: order.productId?.title || "N/A",
+        description: order.productId?.description || "N/A",
+        price: order.productId?.price || 0,
+        mrp: order.productId?.mrp || 0,
+        images: order.productId?.images || [],
+        productType: order.productId?.productType || "N/A",
+      },
+
+   
+      shippingAddress: order.shippingAddress || {},
+
+     
+      promoCode: order.promoCode || null,
+      payment: {
+        amount: order.amount / 100, 
+        currency: order.currency || "INR",
+        razorpay: order.razorpay || {},
+      },
+    }));
+console.log(formattedOrders)
+    res.status(200).json({
+      success: true,
+      totalOrders: formattedOrders.length,
+      data: formattedOrders,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching orders:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching orders",
     });
   }
 };

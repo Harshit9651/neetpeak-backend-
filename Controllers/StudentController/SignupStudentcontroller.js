@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const RegisterStudent = require("../../Models/Student/registerStudentModel");
 const PurchasedCourse = require("../../Models/Course/PurchasedCourse");
 const CourseProgress = require("../../Models/Course/courseProgress");
+const PurchasedMentorship = require("../../Models/Mentroship/purchasementorshipPlanModel");
+const Order = require("../../Models/Product/orderModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
@@ -713,5 +715,84 @@ exports.deleteStudent = async (req, res) => {
   } catch (error) {
     console.error("Error deleting student:", error);
     return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+exports.getPaidStudents = async (req, res) => {
+  try {
+    console.log("we are paid students ");
+
+    const mentorshipPayments = await PurchasedMentorship.find()
+      .populate("student", "name email mobile")
+      .populate("plan", "planName price") 
+      .lean();
+
+  
+    const productOrders = await Order.find({ status: "paid" })
+      .populate("userId", "name email mobile")
+      .populate("productId", "title price")
+      .lean();
+
+    const studentMap = {};
+
+ 
+    mentorshipPayments.forEach((m) => {
+      const studentId = m.student._id;
+      if (!studentMap[studentId]) {
+        studentMap[studentId] = {
+          student: {
+            name: m.student.name,
+            email: m.student.email,
+            mobile: m.student.mobile,
+          },
+          purchases: [],
+          totalAmount: 0,
+        };
+      }
+
+      studentMap[studentId].purchases.push({
+        type: "MentorshipPlan",
+        title: m.plan?.planName || "N/A", 
+      });
+
+      studentMap[studentId].totalAmount += m.pricePaid || 0;
+    });
+
+
+    productOrders.forEach((o) => {
+      const studentId = o.userId._id;
+      if (!studentMap[studentId]) {
+        studentMap[studentId] = {
+          student: {
+            name: o.userId.name,
+            email: o.userId.email,
+            mobile: o.userId.mobile,
+          },
+          purchases: [],
+          totalAmount: 0,
+        };
+      }
+
+      studentMap[studentId].purchases.push({
+        type: "Product",
+        title: o.productId?.title || "N/A",
+      });
+
+      studentMap[studentId].totalAmount += o.amount / 100;
+    });
+
+    const result = Object.values(studentMap);
+    console.log(result);
+
+    res.status(200).json({
+      success: true,
+      totalPaidStudents: result.length,
+      data: result,
+    });
+  } catch (err) {
+    console.error("Error fetching paid students:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching paid students",
+    });
   }
 };

@@ -3,93 +3,13 @@ const crypto = require("crypto");
 const Order = require("../../Models/Product/orderModel");
 const Product = require("../../models/Product/productModel");
 const PromoCode = require("../../models/Course/promocode");
-// ✅ Razorpay Instance (env vars for security)
+
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// ================== CREATE ORDER ==================
-// exports.createOrder = async (req, res) => {
-//   try {
-//     const { productId, userId, promoCode, shippingAddress,  finalpriceInpaise } = req.body;
-//     console.log("we are in createorder function", productId, userId, promoCode, shippingAddress,  finalpriceInpaise)
 
-//     if (!productId || !userId ||!finalpriceInpaise) {
-//       return res.status(400).json({ success: false, message: "Missing required fields" });
-//     }
-
-//     const product = await Product.findById(productId);
-//     if (!product) {
-//       return res.status(404).json({ success: false, message: "Product not found" });
-//     }
-
-//     // ✅ Price calculation (for now simple, can extend with promo logic)
-//     const amountInPaise =   finalpriceInpaise;
-
-//     // ✅ Free Order (below ₹1)
-//     if (amountInPaise < 100) {
-//       const order = await Order.create({
-//         userId,
-//         productId,
-//         productType: product.productType,
-//         amount: 0,
-//         currency: "INR",
-//         promoCode: promoCode || null,
-//         status: "paid",
-//         shippingAddress: product.productType === "Book" ? shippingAddress : undefined,
-//         razorpay: {
-//           orderId: "FREE-ORDER",
-//           paymentId: "FREE-ACCESS",
-//           signature: "NA",
-//         },
-//       });
-//       return res.json({ success: true, free: true, order });
-//     }
-
-//     // ✅ If product is a Book → shipping address mandatory
-//     if (product.productType === "Book") {
-//       if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.phone) {
-//         return res.status(400).json({
-//           success: false,
-//           message: "Shipping address is required for Book products",
-//         });
-//       }
-//     }
-
-//     // ✅ Create order in Razorpay
-//     const razorpayOrder = await razorpay.orders.create({
-//       amount: amountInPaise,
-//       currency: "INR",
-//       receipt: `order_rcpt_${Date.now()}`,
-//     });
-
-//     // ✅ Save order in DB
-//     const newOrder = await Order.create({
-//       userId,
-//       productId,
-//       productType: product.productType,
-//       amount: amountInPaise,
-//       currency: "INR",
-//       promoCode: promoCode || null,
-//       shippingAddress: product.productType === "Book" ? shippingAddress : undefined,
-//       status: "created",
-//       razorpay: {
-//         orderId: razorpayOrder.id,
-//       },
-//     });
-
-//     res.json({
-//       success: true,
-//       orderId: razorpayOrder.id,
-//       amount: razorpayOrder.amount,
-//       currency: razorpayOrder.currency,
-//     });
-//   } catch (err) {
-//     console.error("Error creating order:", err);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
 
 exports.createOrder = async (req, res) => {
   try {
@@ -99,7 +19,6 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // ✅ Product check
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
@@ -107,7 +26,7 @@ exports.createOrder = async (req, res) => {
 
     let appliedPromo = null;
 
-    // ✅ Agar promoCode bheja hai to uska sirf usage update karna hai
+i
     if (promoCode) {
       const promo = await PromoCode.findOne({ code: promoCode, isActive: true });
       if (!promo) {
@@ -117,7 +36,7 @@ exports.createOrder = async (req, res) => {
       appliedPromo = promo;
     }
 
-    // ✅ Free Order (amount < 1 INR)
+ 
     if (finalpriceInpaise < 100) {
       const order = await Order.create({
         userId,
@@ -135,7 +54,6 @@ exports.createOrder = async (req, res) => {
         },
       });
 
-      // ✅ Update promo usage
       if (appliedPromo) {
         appliedPromo.usedCount += 1;
         appliedPromo.usedBy.push({ user: userId, product: productId });
@@ -145,7 +63,7 @@ exports.createOrder = async (req, res) => {
       return res.json({ success: true, free: true, order });
     }
 
-    // ✅ Agar Book hai to shipping address mandatory
+    
     if (product.productType === "Book") {
       if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.phone) {
         return res.status(400).json({
@@ -155,14 +73,14 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // ✅ Razorpay order banao
+
     const razorpayOrder = await razorpay.orders.create({
       amount: finalpriceInpaise,
       currency: "INR",
       receipt: `order_rcpt_${Date.now()}`,
     });
 
-    // ✅ DB me save karo
+
     const newOrder = await Order.create({
       userId,
       productId,
@@ -177,7 +95,7 @@ exports.createOrder = async (req, res) => {
       },
     });
 
-    // ✅ Sirf yaha usage update karna hai
+
     if (appliedPromo) {
       appliedPromo.usedCount += 1;
       appliedPromo.usedBy.push({ user: userId, product: productId });
@@ -197,7 +115,6 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// ================== VERIFY PAYMENT ==================
 exports.verifyPayment = async (req, res) => {
   try {
     const {
@@ -237,7 +154,7 @@ exports.verifyPayment = async (req, res) => {
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
-    console.log("order created successfully:",order)
+    console.log("order created successfully check itt :",order)
 
     res.json({ success: true, order });
   } catch (err) {

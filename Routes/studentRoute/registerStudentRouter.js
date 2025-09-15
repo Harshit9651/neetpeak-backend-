@@ -16,7 +16,8 @@ router.post('/forgotPassword',SignupStudentController.studentForgotPassword )
 router.post('/Verify-forgotPassword-Otp',SignupStudentController.verifyForgotPasswordtOTP)
 router.post('/Update-forgotPassword',SignupStudentController.updateForgotPassword)
 router.delete('/deleteStudent',SignupStudentController.deleteStudent)
-// router.post('/Change-StudentPassword',SignupStudentController.changeStudentPassword)
+router.get("/paidStudentdata",SignupStudentController.getPaidStudents)
+
 
 module.exports = router
 

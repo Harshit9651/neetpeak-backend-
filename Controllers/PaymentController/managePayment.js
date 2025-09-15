@@ -145,11 +145,11 @@ exports.getAllPurchasedMentorships = async (req, res) => {
     console.log("hii");
     const purchases = await PurchasedMentorship.find({})
       .populate({
-        path: "student", // 👈 field name
+        path: "student",
         select: "name email mobile",
       })
       .populate({
-        path: "plan", // 👈 field name
+        path: "plan", 
         select: "planName duration price",
       })
       .sort({ createdAt: -1 });

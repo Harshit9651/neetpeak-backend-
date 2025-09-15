@@ -10,6 +10,6 @@ cron.schedule("*/1 * * * *", async () => {
       { $unset: { otp: "", otpExpires: "" } }
     );
   } catch (error) {
-   console.error("❌ Cron job error:", error.message);
+   console.error(" Cron job error:", error.message);
   }
 });

@@ -174,7 +174,7 @@ if (!quantity || quantity <= 0) {
         message: "Code, productId, and studentId are required.", 
       });
     }
-    console.log("hii")
+
 
     const student = await Student.findById(studentId);
     if (!student) {
@@ -183,7 +183,7 @@ if (!quantity || quantity <= 0) {
         message: "Invalid student.",
       });
     }
-    console.log("hii the student is :",student)
+
 
     const promo = await PromoCode.findOne({ code });
     if (!promo || !promo.isActive) {
@@ -192,21 +192,20 @@ if (!quantity || quantity <= 0) {
         message: "Promo code is invalid or inactive.",
       });
     }
-console.log("hii promo code is :", promo)
+
     if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) {
       return res.status(400).json({
         success: false,
         message: "Promo code has expired.",
       });
     }
-console.log("hii2")
     if (promo.usageLimit > 0 && promo.usedCount >= promo.usageLimit) {
       return res.status(400).json({
         success: false,
         message: "Promo code usage limit reached.",
       });
     }
-console.log("hii3")
+
     if (promo.usedBy?.some((id) => id.toString() === studentId)) {
       return res.status(400).json({
         success: false,
