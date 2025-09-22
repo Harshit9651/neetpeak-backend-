@@ -29,7 +29,7 @@ const orderSchema = new mongoose.Schema(
       country: { type: String, default: "India" },
     },
      
-    // ✅ Payment Info
+  
     amount: { type: Number, required: true }, // in paise
     currency: { type: String, default: "INR" },
     promoCode: { type: String, default: null },

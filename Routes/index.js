@@ -10,5 +10,6 @@ router.use("/Cart", require("./cartRoute"));
 router.use("/Product", require("./productRoute"));
 router.use("/Mentorship",require("./mentorshipRoute"))
 router.use("/Analytics",require("./analyticsRoute"))
+router.use("/mentorshipCallBook",require("./mentorshipCallBookRoute"))
 
 module.exports = router;

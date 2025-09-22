@@ -43,3 +43,29 @@ const cleanusersmodl = async()=>{
 
 }
 // cleanusersmodl()
+require("dotenv").config();
+const axios = require("axios");
+
+const seeToken = async () => {
+  try {
+    const loginRes = await axios.post(
+      "https://cp.expressfly.in/2.1/api-login",   //
+      {
+        email:'neetpeak.delevery@gmail.com',         
+        password: '7891858821'     
+      },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("Login Success ✅");
+    console.log("Token:", loginRes.data?.data?.token);
+  } catch (err) {
+    console.error("Login error:", err.response?.status, err.response?.data || err.message);
+  }
+};
+
+// seeToken();
