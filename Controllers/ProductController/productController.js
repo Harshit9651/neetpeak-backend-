@@ -1,5 +1,5 @@
-const Product = require("../../models/Product/productModel");
-const Order = require("../../models/Product/orderModel")
+const Product = require("../../Models/Product/productModel");
+const Order = require("../../Models/Product/orderModel")
 const { uploadToCloudinary } = require("../../Services/cloudinary.service");
 const { deleteFromCloudinary } = require("../../Services/cloudinary");
 const mongoose = require("mongoose");

@@ -1,8 +1,8 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Order = require("../../Models/Product/orderModel");
-const Product = require("../../models/Product/productModel");
-const PromoCode = require("../../models/Course/promocode");
+const Product = require("../../Models/Product/productModel");
+const PromoCode = require("../../Models/Course/promocode");
 const axios = require("axios")
 
 const razorpay = new Razorpay({

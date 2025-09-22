@@ -1,5 +1,5 @@
 // controllers/mentorship.controller.js
-const  MentorshipPlan = require("../../models/Mentroship/mentorshipModel");
+const  MentorshipPlan = require("../../Models/Mentroship/mentorshipModel");
 
 
  exports.createMentorshipPlan = async (req, res) => {
