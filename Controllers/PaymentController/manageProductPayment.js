@@ -171,8 +171,10 @@ exports.verifyPayment = async (req, res) => {
       razorpay_signature,
       productId,
       userId,
+        quantity
     } = req.body;
-
+console.log("the body is :",req.body)
+    // ✅ Validate input
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return res
         .status(400)
@@ -209,8 +211,7 @@ exports.verifyPayment = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    console.log("✅ Order paid successfully.");
-    console.log("Order total price:", order.amount);
+    console.log("✅ Order paid successfully. Amount:", order.amount);
 
     // ✅ If product is OnlineProduct → No shipment
     if (order.productType === "OnlineProduct") {
@@ -249,14 +250,14 @@ exports.verifyPayment = async (req, res) => {
         message: "Failed to fetch ExpressFly token",
       });
     }
-    console.log("✅ User token:", token);
+    console.log("✅ ExpressFly token received.");
 
-    // 🔑 STEP 2: Get Logistic ID using Calculate Price API
+    // 🔑 STEP 2: Get Logistic Options
     const priceRes = await axios.post(
       "https://cp.expressfly.in/2.1/api-calculate-price",
       {
-        paymentMode: 0, // 0 = prepaid
-        pickupPinCode: 312601, // apna warehouse pincode
+        paymentMode: 0, // prepaid
+        pickupPinCode: 312601, // your warehouse pincode
         deliveryPinCode: Number(addr.pincode),
         multiChecked: "off",
         apprWeight: 1,
@@ -280,28 +281,48 @@ exports.verifyPayment = async (req, res) => {
       }
     );
 
-    console.log("✅ Calculate Price Response:", priceRes.data);
-    console.log("Available Logistics:", priceRes.data?.data?.rates?.list);
+    // 🧾 Response looks like: { data: { rates: { list: { '68': {...}, '78': {...} } } } }
+    const logisticsObj = priceRes.data?.data?.rates?.list || {};
+    const logisticsList = Object.values(logisticsObj);
 
-    const logisticId =
-      priceRes.data?.data?.rates?.list?.[0]?.logistic_id || null;
-
-    if (!logisticId) {
+    if (logisticsList.length === 0) {
       return res.status(400).json({
         success: false,
         message: "No logistic available for this pincode",
         details: priceRes.data,
       });
     }
-    console.log("✅ Selected Logistic ID:", logisticId);
 
-    // 🔑 STEP 3: Build Shipment Payload with logistic_id
+    // console.log(
+    //   "✅ Available Logistics:",
+    //   logisticsList.map((l) => l.api_name)
+    // );
+
+    // 🔍 Prefer BlueDart if available
+    let selectedLogistic = logisticsList.find(
+      (log) => log.api_name?.toLowerCase() === "bluedart"
+    );
+
+    if (!selectedLogistic) {
+      selectedLogistic = logisticsList[0];
+      console.log("⚠️ BlueDart not available. Using first logistic option.");
+    }
+
+    const logisticId = selectedLogistic.logistic_id;
+    console.log(
+      "✅ Selected Logistic:",
+      selectedLogistic.api_name,
+      "ID:",
+      logisticId
+    );
+
+    // 🔑 STEP 3: Build Shipment Payload
     const payload = {
       logistic_id: logisticId,
       consignee_name: addr.fullName,
       mobile_no: addr.phone,
       alternate_mobile_no: addr.phone,
-      email_id: order.userId?.email || "customer@example.com",
+      email_id: addr.email || "customer@example.com",
       receiver_address: addr.addressLine,
       receiver_pincode: Number(addr.pincode),
       receiver_city: addr.city,
@@ -309,7 +330,7 @@ exports.verifyPayment = async (req, res) => {
       receiver_landmark: addr.district || "N/A",
       customer_order_no: razorpay_order_id,
       order_type: 1, // prepaid
-      product_quantity: 1,
+      product_quantity:       quantity || 1,
       cod_amount: 0,
       physical_weight: 1,
       product_length: 10,
@@ -321,16 +342,17 @@ exports.verifyPayment = async (req, res) => {
         {
           sku_number: "SKU-" + productId,
           product_name: "Book",
-          product_quantity: 1,
+          product_quantity:      quantity || 1,
           product_value: order.amount / 100,
         },
       ],
-      sender_address_id: 6557, // apne panel se lena
+      sender_address_id: 6557, // your ExpressFly sender address ID
       return_address_same_as_pickup_address: 1,
     };
+
     console.log("✅ Shipment Payload:", payload);
 
-    // 🔑 STEP 4: Call Shipment API
+    // 🔑 STEP 4: Create Shipment
     const expressRes = await axios.post(
       "https://cp.expressfly.in/2.1/api-b2c-quick-shipment",
       payload,
@@ -342,11 +364,22 @@ exports.verifyPayment = async (req, res) => {
       }
     );
 
-    console.log("✅ Shipment Response:", expressRes.data);
+    console.log("✅ Shipment Created:", expressRes.data);
+
+    // ✅ Optional: Save logistic details in order
+    order.logisticDetails = {
+      courier: selectedLogistic.api_name,
+      logistic_id: selectedLogistic.logistic_id,
+      courier_logo: selectedLogistic.logo_image,
+      total_charge: selectedLogistic.total,
+      expected_delivery: selectedLogistic.expressfly_edd,
+      tracking_data: expressRes.data,
+    };
+    await order.save();
 
     res.json({
       success: true,
-      message: "Payment verified & shipment created successfully",
+      message: `Payment verified & shipment created successfully with ${selectedLogistic.api_name}`,
       order,
       shipment: expressRes.data,
     });

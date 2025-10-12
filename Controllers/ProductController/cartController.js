@@ -61,7 +61,7 @@ exports.getCart = async (req, res) => {
     if (!cart) {
       return res.status(200).json({ success: true, data: { items: [] } });
     }
-console.log("hii the cart items is :",cart.items)
+
     const formattedItems = cart.items.map((item) => ({
       productId: item.product._id,
       title: item.product.title,
@@ -86,7 +86,7 @@ console.log("hii the cart items is :",cart.items)
 exports.removeFromCart = async (req, res) => {
   try {
     const { userId, productId } = req.params;
-    console.log("Removing productId:", productId, "for userId:", userId);
+
 
     if (!userId || !productId) {
       return res.status(400).json({ success: false, message: "UserId and ProductId are required" });
@@ -140,7 +140,7 @@ exports.updateCart = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Product not found in cart" });
     }
-y
+
     cart.items[itemIndex].quantity = quantity;
 
     await cart.save();

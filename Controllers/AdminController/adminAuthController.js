@@ -43,16 +43,16 @@ const seedSuperAdmin = async () => {
   try {
     const deleteadmin = await Admin.deleteOne({});
     console.log(deleteadmin)
-    const existing = await Admin.findOne({ username: "harshit9651" });
+    const existing = await Admin.findOne({ username: "neetpeak" });
     if (existing) {
       console.log("Superadmin already exists");
       return;
     }
 
-    const hashedPassword = "harshit966051@";
+    const hashedPassword = "neetpeak@123";
 
     const newAdmin = new Admin({
-      username: "harshit9651",
+      username: "neetpeak",
       password: hashedPassword,
       role: "superadmin",
     });
@@ -63,7 +63,7 @@ const seedSuperAdmin = async () => {
     console.error("❌ Failed to seed superadmin:", error);
   }
 };
-// seedSuperAdmin();
+
 exports.Usersignup = async (req, res) => {
   try {
     const { username, password, role, phone } = req.body;

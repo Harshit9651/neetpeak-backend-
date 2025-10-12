@@ -21,7 +21,7 @@ exports.createCallOrder = async (req, res) => {
     }
 
     const student = await Student.findById(studentId);
-    console.log("the student is :", student)
+    
     if (!student) {
       return res
         .status(404)
