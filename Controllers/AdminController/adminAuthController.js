@@ -6,10 +6,9 @@ const Contact = require("../../Models/Admin/userQuaryModel")
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log("hii")
-
+ 
     const adminUser = await Admin.findOne({ username });
-    console.log(adminUser)
+  
 
     if (!adminUser) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -45,7 +44,7 @@ const seedSuperAdmin = async () => {
     console.log(deleteadmin)
     const existing = await Admin.findOne({ username: "neetpeak" });
     if (existing) {
-      console.log("Superadmin already exists");
+   
       return;
     }
 
@@ -58,9 +57,9 @@ const seedSuperAdmin = async () => {
     });
 
     await newAdmin.save();
-    console.log("✅ Superadmin created successfully");
+
   } catch (error) {
-    console.error("❌ Failed to seed superadmin:", error);
+   
   }
 };
 
@@ -215,3 +214,4 @@ exports.getAllUserQuaries = async (req, res) => {
   }
 };
 
+seedSuperAdmin();
